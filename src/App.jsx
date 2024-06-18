@@ -39,6 +39,8 @@ const initialProducts = productsFromServer.map(product => {
 export const App = () => {
   const [products, setProducts] = useState(initialProducts);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [showClearButton, setShowClearButton] = useState(false);
 
   const handleFilterByUser = userId => {
     setSelectedUserId(userId);
@@ -48,7 +50,50 @@ export const App = () => {
       const filteredProducts = initialProducts.filter(
         product => product.user.id === userId,
       );
+
       setProducts(filteredProducts);
+    }
+    setSearchInput('');
+    setShowClearButton(false);
+  };
+
+  const handleSearchInputChange = event => {
+    const inputValue = event.target.value;
+    setSearchInput(inputValue);
+    if (inputValue) {
+      setShowClearButton(true);
+      filterProductsByName(inputValue);
+    } else {
+      setShowClearButton(false);
+      if (selectedUserId !== null) {
+        handleFilterByUser(selectedUserId);
+      } else {
+        setProducts(initialProducts);
+      }
+    }
+  };
+
+  const filterProductsByName = searchText => {
+    const filteredProducts = initialProducts.filter(product =>
+      product.name.toLowerCase().includes(searchText.toLowerCase()),
+    );
+    if (selectedUserId !== null) {
+      const filteredByUser = filteredProducts.filter(
+        product => product.user.id === selectedUserId,
+      );
+      setProducts(filteredByUser);
+    } else {
+      setProducts(filteredProducts);
+    }
+  };
+
+  const handleClearSearchInput = () => {
+    setSearchInput('');
+    setShowClearButton(false);
+    if (selectedUserId !== null) {
+      handleFilterByUser(selectedUserId);
+    } else {
+      setProducts(initialProducts);
     }
   };
 
@@ -56,11 +101,9 @@ export const App = () => {
     <div className="section">
       <div className="container">
         <h1 className="title">Product Categories</h1>
-
         <div className="block">
           <nav className="panel">
             <p className="panel-heading">Filters</p>
-
             <p className="panel-tabs has-text-weight-bold">
               <a
                 data-cy="FilterAllUsers"
@@ -82,7 +125,6 @@ export const App = () => {
                 </a>
               ))}
             </p>
-
             <div className="panel-block">
               <p className="control has-icons-left has-icons-right">
                 <input
@@ -90,24 +132,24 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={searchInput}
+                  onChange={handleSearchInputChange}
                 />
-
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
-
-                <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
-                </span>
+                {showClearButton && (
+                  <span className="icon is-right">
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={handleClearSearchInput}
+                    />
+                  </span>
+                )}
               </p>
             </div>
-
             <div className="panel-block is-flex-wrap-wrap">
               <a
                 href="#/"
@@ -116,7 +158,6 @@ export const App = () => {
               >
                 All
               </a>
-
               <a
                 data-cy="Category"
                 className="button mr-2 my-1 is-info"
@@ -124,11 +165,9 @@ export const App = () => {
               >
                 Category 1
               </a>
-
               <a data-cy="Category" className="button mr-2 my-1" href="#/">
                 Category 2
               </a>
-
               <a
                 data-cy="Category"
                 className="button mr-2 my-1 is-info"
@@ -140,7 +179,6 @@ export const App = () => {
                 Category 4
               </a>
             </div>
-
             <div className="panel-block">
               <a
                 data-cy="ResetAllButton"
@@ -152,12 +190,10 @@ export const App = () => {
             </div>
           </nav>
         </div>
-
         <div className="box table-container">
           <p data-cy="NoMatchingMessage">
             No products matching selected criteria
           </p>
-
           <table
             data-cy="ProductTable"
             className="table is-striped is-narrow is-fullwidth"
@@ -174,7 +210,6 @@ export const App = () => {
                     </a>
                   </span>
                 </th>
-
                 <th>
                   <span className="is-flex is-flex-wrap-nowrap">
                     Product
@@ -185,7 +220,6 @@ export const App = () => {
                     </a>
                   </span>
                 </th>
-
                 <th>
                   <span className="is-flex is-flex-wrap-nowrap">
                     Category
@@ -196,7 +230,6 @@ export const App = () => {
                     </a>
                   </span>
                 </th>
-
                 <th>
                   <span className="is-flex is-flex-wrap-nowrap">
                     User
@@ -209,7 +242,6 @@ export const App = () => {
                 </th>
               </tr>
             </thead>
-
             <tbody>
               {products.length === 0 ? (
                 <tr>
